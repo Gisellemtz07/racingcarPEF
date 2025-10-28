@@ -17,16 +17,24 @@ public class NivelSelectorUI : MonoBehaviour
 
     void Start()
     {
-        GameModeManager.Instance.currentMode = GameModeManager.GameMode.Libre;
+        // Establecer modo Libre al entrar aquí
+        GameModeManager.Instance.SetMode(GameModeManager.GameMode.FreePlay);
 
         foreach (var nivel in niveles)
         {
+            // Mostrar la imagen del nivel en su botón
             nivel.imagenUI.sprite = nivel.imagenNivel;
+
+            // Guardar referencia local del nivel dentro del bucle
+            string nivelCopia = nivel.nombreNivel;
+
+            // Configurar qué pasa al presionar el botón
             nivel.botonJugar.onClick.AddListener(() =>
             {
-                SceneManager.LoadScene(nivel.nombreNivel);
+                SceneManager.LoadScene(nivelCopia);
             });
         }
     }
 }
+
 

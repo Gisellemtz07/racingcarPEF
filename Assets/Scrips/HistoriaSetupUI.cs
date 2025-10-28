@@ -9,7 +9,7 @@ public class HistoriaSetupUI : MonoBehaviour
 
     public void IniciarHistoria()
     {
-        GameModeManager.Instance.currentMode = GameModeManager.GameMode.Historia;
+        GameModeManager.Instance.SetMode(GameModeManager.GameMode.Story);
         GameModeManager.Instance.nivelesHistoria.Clear();
         GameModeManager.Instance.vueltasPorNivel.Clear();
         GameModeManager.Instance.nivelActual = 0;

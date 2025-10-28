@@ -58,7 +58,7 @@ public class UserUIController : MonoBehaviour
         }
 
         var pass = inputPassword.text;
-        if (UserDatabase.TryValidate(username, pass, out string error))
+        if (UserDatabase.ValidatePlayerCredentials(username, pass, out string error))
         {
             txtFeedback.text = "¡Listo! ✅";
             if (GameSession.Instance == null)
