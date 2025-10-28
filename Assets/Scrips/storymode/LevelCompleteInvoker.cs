@@ -1,13 +1,14 @@
 using System;
+using UnityEngine;
 
-public static class LevelCompleteInvoker
+public class LevelCompleteInvoker : MonoBehaviour
 {
-    public static Action OnLevelCompleted;
-
+    public static event Action OnLevelCompleted;
     public static void SignalComplete()
     {
+        Debug.Log("LevelCompleteInvoker: ¡nivel completado!");
         OnLevelCompleted?.Invoke();
-        OnLevelCompleted = null; // evita dobles llamadas tras cambio de escena
     }
 }
+
 

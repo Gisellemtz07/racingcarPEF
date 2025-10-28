@@ -1,31 +1,121 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
+using System.Collections.Generic;
 
 public class HistoriaSetupUI : MonoBehaviour
 {
-    public TMP_InputField[] ordenInputs;
-    public TMP_InputField[] vueltasInputs;
-
-    public void IniciarHistoria()
+    [System.Serializable]
+    public class PasoConfigUI
     {
-        GameModeManager.Instance.SetMode(GameModeManager.GameMode.Story);
-        GameModeManager.Instance.nivelesHistoria.Clear();
-        GameModeManager.Instance.vueltasPorNivel.Clear();
-        GameModeManager.Instance.nivelActual = 0;
+        public TMP_Text pasoLabel;
+        public TMP_Dropdown nivelDropdown;
+        public TMP_InputField vueltasInput;
+        public Image previewImage;
+    }
 
-        for (int i = 0; i < ordenInputs.Length; i++)
+    [Header("Slots de la sesión")]
+    public PasoConfigUI[] pasos;
+
+    [Header("Botones")]
+    public Button empezarButton;
+    public Button borrarButton;
+
+    [Header("Catálogo de niveles disponibles")]
+    public string[] nombresEscenasDisponibles;
+    public Sprite[] previewsDeEscenas;
+
+    private void Start()
+    {
+        // Llenar dropdowns con nombres de escenas
+        for (int i = 0; i < pasos.Length; i++)
         {
-            string nivel = ordenInputs[i].text;
-            if (!string.IsNullOrEmpty(nivel))
-            {
-                GameModeManager.Instance.nivelesHistoria.Add(nivel);
-                int vueltas = int.TryParse(vueltasInputs[i].text, out int v) ? v : 1;
-                GameModeManager.Instance.vueltasPorNivel[nivel] = vueltas;
-            }
+            var dropdown = pasos[i].nivelDropdown;
+            dropdown.ClearOptions();
+            dropdown.AddOptions(new List<string>(nombresEscenasDisponibles));
+            UpdatePreviewForStep(i);
+
+            int indexCopia = i;
+            dropdown.onValueChanged.AddListener(_ => UpdatePreviewForStep(indexCopia));
         }
 
-        SceneManager.LoadScene(GameModeManager.Instance.GetNivelActual());
+        empezarButton.onClick.AddListener(OnEmpezarSesion);
+        borrarButton.onClick.AddListener(OnBorrarConfig);
+    }
+
+    private void UpdatePreviewForStep(int pasoIndex)
+    {
+        if (pasoIndex < 0 || pasoIndex >= pasos.Length) return;
+
+        int selectedLevelIdx = pasos[pasoIndex].nivelDropdown.value;
+
+        if (pasos[pasoIndex].previewImage != null &&
+            previewsDeEscenas != null &&
+            selectedLevelIdx >= 0 &&
+            selectedLevelIdx < previewsDeEscenas.Length)
+        {
+            pasos[pasoIndex].previewImage.sprite = previewsDeEscenas[selectedLevelIdx];
+        }
+    }
+
+    private void OnBorrarConfig()
+    {
+        foreach (var p in pasos)
+        {
+            p.nivelDropdown.value = 0;
+            p.vueltasInput.text = "";
+        }
+
+        GameModeManager.Instance.nivelActual = 0;
+        GameModeManager.Instance.nivelesHistoria.Clear();
+        GameModeManager.Instance.vueltasPorNivel.Clear();
+    }
+
+    private void OnEmpezarSesion()
+    {
+        var manager = GameModeManager.Instance;
+        manager.nivelesHistoria.Clear();
+        manager.vueltasPorNivel.Clear();
+        manager.nivelActual = 0;
+        manager.SetMode(GameModeManager.GameMode.Story);
+
+        for (int i = 0; i < pasos.Length; i++)
+        {
+            int selectedIdx = pasos[i].nivelDropdown.value;
+            string escena = nombresEscenasDisponibles[selectedIdx];
+
+            int vueltas = 3;
+            if (!string.IsNullOrEmpty(pasos[i].vueltasInput.text))
+                int.TryParse(pasos[i].vueltasInput.text, out vueltas);
+
+            manager.nivelesHistoria.Add(escena);
+            manager.vueltasPorNivel[escena] = vueltas;
+        }
+
+        // Crear el controlador global de niveles si no existe
+        EnsureNivelControllerListenerExists();
+
+        string primerNivel = manager.GetNivelActual();
+        if (!string.IsNullOrEmpty(primerNivel))
+        {
+            Debug.Log($"[HistoriaSetupUI] Iniciando historia con {primerNivel}");
+            SceneManager.LoadScene(primerNivel);
+        }
+        else
+        {
+            Debug.LogError("[HistoriaSetupUI] No hay niveles configurados.");
+        }
+    }
+
+    private void EnsureNivelControllerListenerExists()
+    {
+        if (Object.FindFirstObjectByType<NivelControllerGlobal>() == null)
+
+        {
+            var go = new GameObject("NivelControllerGlobal");
+            go.AddComponent<NivelControllerGlobal>();
+            DontDestroyOnLoad(go);
+        }
     }
 }
-

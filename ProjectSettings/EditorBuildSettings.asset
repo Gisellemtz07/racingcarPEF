@@ -18,6 +18,9 @@ EditorBuildSettings:
     path: Assets/Scenes/Login.unity
     guid: 1d533fcc5de8845c2bb407b9ca4bde02
   - enabled: 1
+    path: Assets/Scenes/HistoriaSetup.unity
+    guid: 765ccf817dc7e4be486fd94fcbc382f2
+  - enabled: 1
     path: Assets/Scenes/SeleccionCarroPista.unity
     guid: f0cf5f29a5b044e2bac8017fba476cad
   - enabled: 1

@@ -3,43 +3,39 @@ using UnityEngine.SceneManagement;
 
 public class NivelController : MonoBehaviour
 {
-    public GameObject popupUI;
-    public GameObject botonFinalizar;
+    private bool nivelTerminado = false;
 
-    void Start()
+    void OnEnable()
     {
-        if (GameModeManager.Instance.CurrentMode == GameModeManager.GameMode.Story)
+        LevelCompleteInvoker.OnLevelCompleted += OnNivelTerminado;
+    }
+
+    void OnDisable()
+    {
+        LevelCompleteInvoker.OnLevelCompleted -= OnNivelTerminado;
+    }
+
+    private void OnNivelTerminado()
+    {
+        if (nivelTerminado) return; // evitar doble llamada
+        nivelTerminado = true;
+
+        Debug.Log("🏁 Nivel completado. Revisando siguiente nivel...");
+
+        var manager = GameModeManager.Instance;
+        manager.AvanzarNivel();
+
+        string siguiente = manager.GetNivelActual();
+
+        if (!string.IsNullOrEmpty(siguiente))
         {
-            botonFinalizar.SetActive(true);
+            Debug.Log($"➡️ Cargando siguiente nivel: {siguiente}");
+            SceneManager.LoadScene(siguiente);
         }
         else
         {
-            botonFinalizar.SetActive(false);
-        }
-
-        popupUI.SetActive(false);
-    }
-
-    public void FinalizarNivel()
-    {
-        popupUI.SetActive(true);
-    }
-
-    public void AvanzarSiguienteNivel()
-    {
-        if (GameModeManager.Instance.CurrentMode == GameModeManager.GameMode.Story)
-        {
-            GameModeManager.Instance.AvanzarNivel();
-            string siguiente = GameModeManager.Instance.GetNivelActual();
-
-            if (siguiente != null)
-                SceneManager.LoadScene(siguiente);
-            else
-                SceneManager.LoadScene("MainMenu");
-        }
-        else
-        {
-            SceneManager.LoadScene("MainMenu");
+            Debug.Log("🎉 Fin del modo historia. Regresando al menú principal.");
+            SceneManager.LoadScene("MainMenu"); // cambia por tu escena del menú real
         }
     }
 }

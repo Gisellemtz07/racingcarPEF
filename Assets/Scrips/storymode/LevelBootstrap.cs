@@ -2,33 +2,31 @@ using UnityEngine;
 
 public class LevelBootstrap : MonoBehaviour
 {
-    [Tooltip("Tu script que controla las vueltas (p.ej., LapCounter)")]
-    public MonoBehaviour lapCounterBehaviour;
-
-    [Tooltip("Nombre del método público para fijar vueltas")]
-    public string setLapsMethodName = "SetTargetLaps";
+    public GameMetrics metrics;
 
     void Start()
     {
-        var state = StoryRuntimeState.Instance;
-        if (state == null || state.currentStep == null)
-        {
-            Debug.LogWarning("StoryRuntimeState no presente; usando defaults del nivel.");
-            return;
-        }
+        if (metrics == null)
+            metrics = Object.FindFirstObjectByType<GameMetrics>();
 
-        int laps = state.currentStep.targetLaps;
 
-        var method = lapCounterBehaviour?.GetType().GetMethod(setLapsMethodName);
-        if (method != null)
+        string currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        var manager = GameModeManager.Instance;
+
+        int laps = 3;
+        if (manager != null && manager.vueltasPorNivel.ContainsKey(currentScene))
+            laps = manager.vueltasPorNivel[currentScene];
+
+        if (metrics != null)
         {
-            method.Invoke(lapCounterBehaviour, new object[] { laps });
-            Debug.Log($"[LevelBootstrap] Vueltas objetivo fijadas a {laps}");
+            metrics.SetTargetLaps(laps);
+            Debug.Log($"[LevelBootstrap] Asignadas {laps} vueltas al nivel {currentScene}");
         }
         else
         {
-            Debug.LogWarning($"No encontré el método {setLapsMethodName} en {lapCounterBehaviour?.GetType().Name}");
+            Debug.LogWarning("[LevelBootstrap] No se encontró GameMetrics.");
         }
     }
 }
+
 
