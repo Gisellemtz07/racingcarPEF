@@ -1,12 +1,19 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 
 public class GameModeManager : MonoBehaviour
 {
     public static GameModeManager Instance;
-    public enum GameMode { Historia, Libre }
-    public GameMode currentMode;
+
+    public enum GameMode
+    {
+        Story,
+        FreePlay
+    }
+
+    [SerializeField]
+    private GameMode currentMode;
+    public GameMode CurrentMode => currentMode;
 
     public List<string> nivelesHistoria = new List<string>();
     public Dictionary<string, int> vueltasPorNivel = new Dictionary<string, int>();
@@ -19,32 +26,25 @@ public class GameModeManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
         }
-        else
+        else if (Instance != this)
         {
             Destroy(gameObject);
         }
     }
 
-    public void ElegirModoHistoria()
+    public void SetMode(GameMode mode)
     {
-        currentMode = GameMode.Historia;
-        SceneManager.LoadScene("HistoriaSetup");
-    }
-
-    public void ElegirModoLibre()
-    {
-        currentMode = GameMode.Libre;
-
-        // 🔹 Aquí respetamos tu login del modo libre
-        SceneManager.LoadScene("Login");
+        currentMode = mode;
     }
 
     public string GetNivelActual()
     {
         if (nivelActual < nivelesHistoria.Count)
+        {
             return nivelesHistoria[nivelActual];
-        else
-            return null;
+        }
+
+        return null;
     }
 
     public void AvanzarNivel()
@@ -52,5 +52,3 @@ public class GameModeManager : MonoBehaviour
         nivelActual++;
     }
 }
-
-

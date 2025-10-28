@@ -8,7 +8,7 @@ public class NivelController : MonoBehaviour
 
     void Start()
     {
-        if (GameModeManager.Instance.currentMode == GameModeManager.GameMode.Historia)
+        if (GameModeManager.Instance.CurrentMode == GameModeManager.GameMode.Story)
         {
             botonFinalizar.SetActive(true);
         }
@@ -27,7 +27,7 @@ public class NivelController : MonoBehaviour
 
     public void AvanzarSiguienteNivel()
     {
-        if (GameModeManager.Instance.currentMode == GameModeManager.GameMode.Historia)
+        if (GameModeManager.Instance.CurrentMode == GameModeManager.GameMode.Story)
         {
             GameModeManager.Instance.AvanzarNivel();
             string siguiente = GameModeManager.Instance.GetNivelActual();

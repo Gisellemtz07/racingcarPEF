@@ -17,7 +17,7 @@ public class NivelSelectorUI : MonoBehaviour
 
     void Start()
     {
-        GameModeManager.Instance.currentMode = GameModeManager.GameMode.Libre;
+        GameModeManager.Instance.SetMode(GameModeManager.GameMode.FreePlay);
 
         foreach (var nivel in niveles)
         {
