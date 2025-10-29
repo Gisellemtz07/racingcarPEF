@@ -6,63 +6,57 @@ using TMPro;
 public class GameMetrics : MonoBehaviour
 {
     // ====== UI (TMP) ======
-    public TextMeshProUGUI velocidadTMP;       // "velocidad"
-    public TextMeshProUGUI vueltasTMP;         // "vueltas"
-    public TextMeshProUGUI ultimaVueltaTMP;    // "ultimavuelta"
-    public TextMeshProUGUI mejorVueltaTMP;     // "mejorvuelta"
-    public TextMeshProUGUI promedioVueltaTMP;  // "promediovuelta"
-    public TextMeshProUGUI golpesTMP;          // "golpes"
+    public TextMeshProUGUI velocidadTMP;       
+    public TextMeshProUGUI vueltasTMP;         
+    public TextMeshProUGUI ultimaVueltaTMP;    
+    public TextMeshProUGUI mejorVueltaTMP;     
+    public TextMeshProUGUI promedioVueltaTMP;  
+    public TextMeshProUGUI fueraTMP;           // Tiempo fuera de pista
+    public TextMeshProUGUI salidasTMP;         // Veces que se salió de la pista
 
     // ====== Vueltas / tiempos ======
     private Rigidbody2D rb;
-    public int currentLaps { get; private set; } = 0;  // vueltas completadas
-    public int targetLaps = 3;                          // objetivo (lo sobreescribe LevelBootstrap)
+    public int currentLaps { get; private set; } = 0;
+    public int targetLaps = 3;
 
-    private float lapStartTime = 0f;        // cuándo empezó la vuelta en curso
+    private float lapStartTime = 0f;
     private float lastLap = 0f;
     private float bestLap = Mathf.Infinity;
     private float avgLap = 0f;
+    private bool racePrimed = false;
 
-    // ⬇️ NUEVO: “armado” de carrera (primera pasada NO cuenta)
-    private bool racePrimed = false;        // false = aún no se ha hecho el primer cruce “de armado”
+    // ====== Métricas fuera de pista ======
+    [Header("Fuera de pista")]
+    public LayerMask offTrackMask;
+    private bool fueraDePista = false;
+    private float tiempoInicioFuera = 0f;
+    private float tiempoTotalFuera = 0f;
+    private int vecesFuera = 0;
 
-    // ====== Colisiones ======
-    [Header("Colisiones")]
-    public LayerMask wallMask;              // capa 'Walls'
-    public float collisionCooldown = 0.15f;
-    public float minImpactSpeed = 0.6f;
-    private float lastHitTime = -999f;
-    private int golpesCount = 0;
-
-    // ====== Feedback visual ======
-    [Header("Feedback de choque")]
-    public Color hitFlashColor = new Color(1f, 0.25f, 0.25f); // rojo suave
-    public float hitFlashTime = 0.20f;       // segundos
-    public float hitPunchScale = 1.15f;      // escala temporal del TMP
-
-    Color golpesOriginalColor;
-    Vector3 golpesOriginalScale;
+    // ====== Propiedades públicas para otros scripts ======
+// ====== Propiedades públicas para otros scripts ======
+public int VueltasCompletadas => currentLaps;
+public int VueltasObjetivo => targetLaps;
+public float MejorVuelta => bestLap;
+public float PromedioVuelta => avgLap;
+public int GolpesTotales => 0; // compatibilidad con SessionRecorder
+public float Fuera => Fuera;
+public int VecesFuera => vecesFuera;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         rb.gravityScale = 0f;
 
-        // Autoconectar por nombre si faltan (opcional)
-        if (!velocidadTMP)      velocidadTMP      = FindTMP("velocidad");
-        if (!vueltasTMP)        vueltasTMP        = FindTMP("vueltas");
-        if (!ultimaVueltaTMP)   ultimaVueltaTMP   = FindTMP("ultimavuelta");
-        if (!mejorVueltaTMP)    mejorVueltaTMP    = FindTMP("mejorvuelta");
+        // Autoconectar TMPs si faltan
+        if (!velocidadTMP) velocidadTMP = FindTMP("velocidad");
+        if (!vueltasTMP) vueltasTMP = FindTMP("vueltas");
+        if (!ultimaVueltaTMP) ultimaVueltaTMP = FindTMP("ultimavuelta");
+        if (!mejorVueltaTMP) mejorVueltaTMP = FindTMP("mejorvuelta");
         if (!promedioVueltaTMP) promedioVueltaTMP = FindTMP("promediovuelta");
-        if (!golpesTMP)         golpesTMP         = FindTMP("golpes");
+        if (!fueraTMP) fueraTMP = FindTMP("fuerapista");
+        if (!salidasTMP) salidasTMP = FindTMP("salidapista");
 
-        if (golpesTMP)
-        {
-            golpesOriginalColor = golpesTMP.color;
-            golpesOriginalScale = golpesTMP.rectTransform.localScale;
-        }
-
-        // Asegura UI en estado inicial (vueltas 0 / target)
         UpdateUI();
     }
 
@@ -76,13 +70,10 @@ public class GameMetrics : MonoBehaviour
     public void SetTargetLaps(int laps)
     {
         targetLaps = Mathf.Max(1, laps);
-        ResetSession(keepTarget:true);
+        ResetSession(keepTarget: true);
         Debug.Log($"[GameMetrics] targetLaps fijado a {targetLaps} y sesión reiniciada");
     }
 
-    /// <summary>
-    /// Reinicia contadores de la sesión. Útil al cargar escena.
-    /// </summary>
     public void ResetSession(bool keepTarget = false)
     {
         currentLaps = 0;
@@ -90,84 +81,67 @@ public class GameMetrics : MonoBehaviour
         lastLap = 0f;
         bestLap = Mathf.Infinity;
         avgLap = 0f;
-        racePrimed = false;    // ⬅️ importante para NO contar la primera pasada
+        racePrimed = false;
+        tiempoInicioFuera = 0f;
+        tiempoTotalFuera = 0f;
+        vecesFuera = 0;
         if (!keepTarget) targetLaps = Mathf.Max(1, targetLaps);
         UpdateUI();
     }
 
-    // ====== Cruce por la línea de meta ======
-    // Llama a esto tu Meta.cs (ya lo hace) → NO cuenta la primera pasada
+    // ====== Vueltas ======
     public void RegisterLap()
     {
         float now = Time.time;
 
-        // Primera vez que cruzas: SOLO arma la carrera (no suma vuelta)
         if (!racePrimed)
         {
             racePrimed = true;
-            lapStartTime = now;          // empezamos a medir la PRIMERA vuelta
-            UpdateUI();                  // seguirá mostrando 0/target
-            Debug.Log("[GameMetrics] Primer cruce: carrera ARMADA (vueltas = 0).");
+            lapStartTime = now;
+            UpdateUI();
+            Debug.Log("[GameMetrics] Carrera armada (vueltas = 0).");
             return;
         }
 
-        // De aquí en adelante, cada cruce SÍ cuenta una vuelta completa
         lastLap = (lapStartTime > 0f) ? now - lapStartTime : 0f;
         lapStartTime = now;
 
         currentLaps++;
-
         if (lastLap > 0f && lastLap < bestLap) bestLap = lastLap;
-
-        if (currentLaps == 1) avgLap = lastLap; // primera vuelta completa define el promedio inicial
-        else                  avgLap = ((avgLap * (currentLaps - 1)) + lastLap) / currentLaps;
+        avgLap = (currentLaps == 1) ? lastLap : ((avgLap * (currentLaps - 1)) + lastLap) / currentLaps;
 
         UpdateUI();
 
-        // ¿Se alcanzó la meta?
         if (currentLaps >= targetLaps)
         {
-            Debug.Log($"[GameMetrics] Vueltas objetivo alcanzadas ({currentLaps}/{targetLaps}). Finalizando nivel…");
+            Debug.Log($"[GameMetrics] Vueltas objetivo alcanzadas ({currentLaps}/{targetLaps}).");
             LevelCompleteInvoker.SignalComplete();
         }
     }
 
-    // ====== Colisiones + feedback ======
-    void OnCollisionEnter2D(Collision2D c)
+    // ====== Fuera de pista ======
+    void OnTriggerEnter2D(Collider2D other)
     {
-        // ¿Es pared?
-        if (((1 << c.collider.gameObject.layer) & wallMask.value) == 0) return;
-
-        // filtros
-        if (Time.time - lastHitTime < collisionCooldown) return;
-        if (c.relativeVelocity.magnitude < minImpactSpeed) return;
-
-        lastHitTime = Time.time;
-        golpesCount++;
-        UpdateUI();
-
-        if (golpesTMP) StartCoroutine(FlashTMP(golpesTMP, hitFlashColor, hitFlashTime, hitPunchScale));
+        if (((1 << other.gameObject.layer) & offTrackMask.value) != 0)
+        {
+            fueraDePista = true;
+            tiempoInicioFuera = Time.time;
+            vecesFuera++;
+            Debug.Log($"[GameMetrics] 🚨 Salió de pista (vez #{vecesFuera})");
+            UpdateUI();
+        }
     }
 
-    IEnumerator FlashTMP(TextMeshProUGUI tmp, Color flashColor, float time, float punchScale)
+    void OnTriggerExit2D(Collider2D other)
     {
-        Color startColor = tmp.color;
-        Vector3 startScale = tmp.rectTransform.localScale;
-
-        tmp.color = flashColor;
-        tmp.rectTransform.localScale = startScale * punchScale;
-
-        float t = 0f;
-        while (t < time)
+        if (((1 << other.gameObject.layer) & offTrackMask.value) != 0 && fueraDePista)
         {
-            t += Time.unscaledDeltaTime;
-            float k = Mathf.Clamp01(t / time);
-            tmp.color = Color.Lerp(flashColor, golpesOriginalColor, k);
-            tmp.rectTransform.localScale = Vector3.Lerp(startScale * punchScale, golpesOriginalScale, k);
-            yield return null;
+            fueraDePista = false;
+            float duracion = Time.time - tiempoInicioFuera;
+            tiempoTotalFuera += duracion;
+            Debug.Log($"[GameMetrics] ✅ Regresó a pista (fuera {duracion:0.00}s, total {tiempoTotalFuera:0.00}s)");
+            UpdateUI();
         }
-        tmp.color = golpesOriginalColor;
-        tmp.rectTransform.localScale = golpesOriginalScale;
     }
 
     // ====== Helpers ======
@@ -188,14 +162,18 @@ public class GameMetrics : MonoBehaviour
     void UpdateUI()
     {
         if (vueltasTMP)
-        {
-            if (targetLaps > 0) vueltasTMP.text = $"Vueltas: {currentLaps}/{targetLaps}";
-            else                 vueltasTMP.text = $"Vueltas: {currentLaps}";
-        }
-        if (ultimaVueltaTMP)   ultimaVueltaTMP.text   = $"Última: {FormatSec(lastLap)}";
-        if (mejorVueltaTMP)    mejorVueltaTMP.text    = $"Mejor: {FormatSec(bestLap)}";
-        if (promedioVueltaTMP) promedioVueltaTMP.text = $"Prom: {(avgLap > 0 ? FormatSec(avgLap) : "--")}";
-        if (golpesTMP)         golpesTMP.text         = $"Golpes: {golpesCount}";
+            vueltasTMP.text = $"Vueltas: {currentLaps}/{targetLaps}";
+        if (ultimaVueltaTMP)
+            ultimaVueltaTMP.text = $"Última: {FormatSec(lastLap)}";
+        if (mejorVueltaTMP)
+            mejorVueltaTMP.text = $"Mejor: {FormatSec(bestLap)}";
+        if (promedioVueltaTMP)
+            promedioVueltaTMP.text = $"Prom: {(avgLap > 0 ? FormatSec(avgLap) : "--")}";
+        if (fueraTMP)
+            fueraTMP.text = $"Fuera pista: {tiempoTotalFuera:0.0}s";
+        if (salidasTMP)
+            salidasTMP.text = $"Salidas: {vecesFuera}";
     }
 }
+
 

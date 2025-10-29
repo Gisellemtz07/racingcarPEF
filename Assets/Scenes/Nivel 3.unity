@@ -1877,16 +1877,12 @@ MonoBehaviour:
   ultimaVueltaTMP: {fileID: 1433070886}
   mejorVueltaTMP: {fileID: 2025056894}
   promedioVueltaTMP: {fileID: 1763130029}
-  golpesTMP: {fileID: 1769579872}
+  fueraTMP: {fileID: 0}
+  salidasTMP: {fileID: 0}
   targetLaps: 2
-  wallMask:
+  offTrackMask:
     serializedVersion: 2
-    m_Bits: 64
-  collisionCooldown: 0.15
-  minImpactSpeed: 0.6
-  hitFlashColor: {r: 1, g: 0.25, b: 0.25, a: 1}
-  hitFlashTime: 0.2
-  hitPunchScale: 1.15
+    m_Bits: 0
 --- !u!114 &1424163790
 MonoBehaviour:
   m_ObjectHideFlags: 0

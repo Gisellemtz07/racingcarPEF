@@ -19,23 +19,20 @@ public class UserUIController : MonoBehaviour
 
     void Start()
     {
-        // 🔹 Carga los usuarios guardados
         UserDatabase.Load();
-
-        // 🔹 Configura visibilidad inicial
         panelCrear.SetActive(false);
         panelLogin.SetActive(true);
-
-        // 🔹 Llena el dropdown con los nombres existentes
         RefrescarListaUsuarios();
 
-        // Si no hay usuarios, abre el panel de creación
         if (UserDatabase.Users.Count == 0)
         {
             panelLogin.SetActive(false);
             panelCrear.SetActive(true);
             txtFeedbackCrear.text = "Crea tu primer usuario 🤟";
         }
+
+        if (GameModeManager.Instance != null)
+            Debug.Log($"[Login] Modo actual: {GameModeManager.Instance.CurrentMode}");
     }
 
     void RefrescarListaUsuarios()
@@ -46,9 +43,7 @@ public class UserUIController : MonoBehaviour
         dropdownUsuarios.AddOptions(new System.Collections.Generic.List<string>(names));
     }
 
-    // ===========================================================
-    // 🔹 Botones de LOGIN
-    // ===========================================================
+    // ========== LOGIN ==========
     public void OnClick_IniciarSesion()
     {
         if (UserDatabase.Users.Count == 0)
@@ -69,55 +64,49 @@ public class UserUIController : MonoBehaviour
         {
             txtFeedback.text = "¡Listo! ✅";
 
-            // 🔹 Asegura que exista la sesión global
             if (GameSession.Instance == null)
             {
                 var go = new GameObject("_GameSession");
                 go.AddComponent<GameSession>();
             }
-
             GameSession.Instance.SetUsuarioActual(username);
 
-            // 🔹 Cambia a la escena de selección
-            SceneManager.LoadScene("SeleccionCarroPista");
+            // 🔹 Detectar modo historia
+            if (GameModeManager.Instance != null &&
+                GameModeManager.Instance.CurrentMode == GameModeManager.GameMode.Story)
+            {
+                string primerNivel = GameModeManager.Instance.GetNivelActual();
+                Debug.Log($"[Login] Iniciando historia con {primerNivel}");
+                SceneManager.LoadScene(primerNivel);
+            }
+            else
+            {
+                // flujo normal
+                SceneManager.LoadScene("SeleccionCarroPista");
+            }
         }
         else
         {
-            txtFeedback.text = error; // "Contraseña incorrecta" o "Usuario no encontrado"
+            txtFeedback.text = error;
         }
     }
 
     public void OnClick_IrANuevoUsuario()
-{
-    // 🔹 Asegúrate de que el panel de creación se reactive correctamente
-    if (panelCrear == null)
     {
-        Debug.LogError("panelCrear no está asignado en el Inspector.");
-        return;
+        panelLogin.SetActive(false);
+        panelCrear.SetActive(true);
+
+        foreach (Transform child in panelCrear.transform)
+            child.gameObject.SetActive(true);
+
+        txtFeedback.text = "";
+        txtFeedbackCrear.text = "";
+        inputNuevoUsuario.text = "";
+        inputNuevaPass.text = "";
+        inputRepitePass.text = "";
     }
 
-    panelLogin.SetActive(false);
-    panelCrear.SetActive(true);
-
-    // 🔹 Reactiva todos los campos del panel de creación
-    foreach (Transform child in panelCrear.transform)
-    {
-        child.gameObject.SetActive(true);
-    }
-
-    txtFeedback.text = "";
-    txtFeedbackCrear.text = "";
-    inputNuevoUsuario.text = "";
-    inputNuevaPass.text = "";
-    inputRepitePass.text = "";
-
-    Debug.Log("🟢 Panel de creación reactivado correctamente.");
-}
-
-
-    // ===========================================================
-    // 🔹 Botones de CREAR USUARIO
-    // ===========================================================
+    // ========== CREAR ==========
     public void OnClick_CrearUsuario()
     {
         var u = inputNuevoUsuario.text.Trim();
@@ -133,8 +122,6 @@ public class UserUIController : MonoBehaviour
         if (UserDatabase.TryCreate(u, p1, out string error))
         {
             txtFeedbackCrear.text = "Usuario creado ✅";
-
-            // 🔹 Volver al login
             panelCrear.SetActive(false);
             panelLogin.SetActive(true);
             RefrescarListaUsuarios();
@@ -152,3 +139,4 @@ public class UserUIController : MonoBehaviour
         txtFeedbackCrear.text = "";
     }
 }
+

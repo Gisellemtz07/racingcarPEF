@@ -93,25 +93,20 @@ public class HistoriaSetupUI : MonoBehaviour
             manager.vueltasPorNivel[escena] = vueltas;
         }
 
-        // Crear el controlador global de niveles si no existe
+        // 🔹 Asegura persistencia del manager
+        DontDestroyOnLoad(manager.gameObject);
+
+        // 🔹 Crear el controlador global de niveles si no existe
         EnsureNivelControllerListenerExists();
 
-        string primerNivel = manager.GetNivelActual();
-        if (!string.IsNullOrEmpty(primerNivel))
-        {
-            Debug.Log($"[HistoriaSetupUI] Iniciando historia con {primerNivel}");
-            SceneManager.LoadScene(primerNivel);
-        }
-        else
-        {
-            Debug.LogError("[HistoriaSetupUI] No hay niveles configurados.");
-        }
+        // 🔹 Cargar la escena de Login
+        Debug.Log("[HistoriaSetupUI] Redirigiendo al login antes de iniciar historia...");
+        SceneManager.LoadScene("Login");
     }
 
     private void EnsureNivelControllerListenerExists()
     {
         if (Object.FindFirstObjectByType<NivelControllerGlobal>() == null)
-
         {
             var go = new GameObject("NivelControllerGlobal");
             go.AddComponent<NivelControllerGlobal>();
