@@ -105,12 +105,13 @@ public class HistoriaSetupUI : MonoBehaviour
     }
 
     private void EnsureNivelControllerListenerExists()
+{
+    if (Object.FindFirstObjectByType<NivelControllerGlobal>() == null)
     {
-        if (Object.FindFirstObjectByType<NivelControllerGlobal>() == null)
-        {
-            var go = new GameObject("NivelControllerGlobal");
-            go.AddComponent<NivelControllerGlobal>();
-            DontDestroyOnLoad(go);
-        }
+        var go = new GameObject("NivelControllerGlobal");
+        go.AddComponent<NivelControllerGlobal>();
+        DontDestroyOnLoad(go);
     }
+}
+
 }
