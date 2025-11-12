@@ -320,7 +320,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_margin: {x: -219.45503, y: 0, z: -211.22545, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -720,7 +720,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -24.413208, y: -8.768127}
+  m_AnchoredPosition: {x: -24.413208, y: -8.768188}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &200734034
@@ -2319,7 +2319,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 21e5d0dbd3c41493f8bb4c310ded3aa8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UserUIController
-  panelLogin: {fileID: 1455334301}
+  panelLogin: {fileID: 1987100961}
   dropdownUsuarios: {fileID: 103300562}
   inputPassword: {fileID: 1923317884}
   txtFeedback: {fileID: 1565859815}
@@ -3954,7 +3954,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_margin: {x: -206.02722, y: 0, z: -208.75603, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -4949,7 +4949,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -69.84546, y: -15.25293}
+  m_AnchoredPosition: {x: -69.84546, y: -15.252991}
   m_SizeDelta: {x: 225.2626, y: 86.3222}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1987100963

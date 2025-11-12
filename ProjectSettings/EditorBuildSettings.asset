@@ -12,11 +12,11 @@ EditorBuildSettings:
     path: Assets/Scenes/Nivel2.unity
     guid: 2cda990e2423bbf4892e6590ba056729
   - enabled: 1
-    path: Assets/Scenes/MainMenu.unity
-    guid: cb85e55691822455dbc82bade9dd6c43
-  - enabled: 1
     path: Assets/Scenes/Login.unity
     guid: 1d533fcc5de8845c2bb407b9ca4bde02
+  - enabled: 1
+    path: Assets/Scenes/MainMenu.unity
+    guid: cb85e55691822455dbc82bade9dd6c43
   - enabled: 1
     path: Assets/Scenes/HistoriaSetup.unity
     guid: 765ccf817dc7e4be486fd94fcbc382f2

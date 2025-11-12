@@ -37,8 +37,23 @@ public class GameSession : MonoBehaviour
     {
         usuarioActual = nombreUsuario;
         rol = tipoRol;
-        Debug.Log($"👤 Usuario actual: {usuarioActual} (rol: {rol})");
+        Debug.Log($" Usuario actual: {usuarioActual} (rol: {rol})");
     }
+   
+    // === NUEVO CÓDIGO PARA GUARDAR EL CARRO ===
+// === Nuevo método para obtener el carro seleccionado ===
+private string carroActual;
+
+public void SetCarroActual(string nombre)
+{
+    carroActual = nombre;
+    Debug.Log($"[GameSession] Carro seleccionado: {carroActual}");
+}
+
+public string GetCarroActual()
+{
+    return carroActual;
+}
 
     public string GetUsuarioActual()
     {
@@ -48,18 +63,18 @@ public class GameSession : MonoBehaviour
     public void SetCar(string carName)
     {
         SelectedCar = carName;
-        Debug.Log($"🚗 Auto seleccionado: {carName}");
+        Debug.Log($" Auto seleccionado: {carName}");
     }
 
     public void SetScene(string sceneName)
     {
         SelectedScene = sceneName;
-        Debug.Log($"🎮 Escena seleccionada: {sceneName}");
+        Debug.Log($" Escena seleccionada: {sceneName}");
     }
 
     public void SetTrack(string trackName)
     {
         SelectedTrack = trackName;
-        Debug.Log($"🛣️ Circuito seleccionado: {trackName}");
+        Debug.Log($" Circuito seleccionado: {trackName}");
     }
 }

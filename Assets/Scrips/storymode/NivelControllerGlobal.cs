@@ -83,33 +83,44 @@ private void TryWireUI()
         Debug.LogWarning("[NivelControllerGlobal] ⚠️ No encontré BtnContinuar dentro del PanelFinNivel.");
     }
 
-    if (salirT != null)
-    {
-        botonSalir = salirT.GetComponent<Button>();
-        botonSalir.onClick.RemoveAllListeners();
-        botonSalir.onClick.AddListener(OnClickSalir);
-        Debug.Log("[NivelControllerGlobal] 🟢 BtnSalir conectado correctamente.");
-    }
-    else
-    {
-        Debug.LogWarning("[NivelControllerGlobal] ⚠️ No encontré BtnSalir dentro del PanelFinNivel.");
-    }
+        if (salirT != null)
+        {
+            botonSalir = salirT.GetComponent<Button>();
+            botonSalir.onClick.RemoveAllListeners();
+            botonSalir.onClick.AddListener(OnClickSalir);
+            Debug.Log("[NivelControllerGlobal] 🟢 BtnSalir conectado correctamente.");
+        }
+        else
+        {
+            Debug.LogWarning("[NivelControllerGlobal] ⚠️ No encontré BtnSalir dentro del PanelFinNivel.");
+        }
+    
+    if (panelFinNivel == null)
+{
+    panelFinNivel = GameObject.Find("PanelFinNivel");
+}
+
 }
 
     // === CUANDO EL NIVEL TERMINA ===
     private void OnNivelCompletado()
+{
+    Debug.Log("[NivelControllerGlobal] Recibí señal de nivel completado 🏁");
+
+    // Asegura que tenemos referencias
+    if (panelFinNivel == null)
     {
-        Debug.Log("[NivelControllerGlobal] Recibí señal de nivel completado 🏁");
+        Debug.Log("[NivelControllerGlobal] panelFinNivel era null, intentamos volver a enlazar UI...");
+        TryWireUI();
+    }
 
-        // Asegúrate de que tenemos referenciado el panel,
-        // por si no estaba listo en OnSceneLoaded.
-        if (panelFinNivel == null)
-        {
-            Debug.Log("[NivelControllerGlobal] panelFinNivel era null, intentamos volver a enlazar UI...");
-            TryWireUI();
-        }
+    // 🔹 Determinar modo actual
+    bool esHistoria = GameModeManager.Instance != null &&
+                      GameModeManager.Instance.CurrentMode == GameModeManager.GameMode.Story;
 
-        // ¿ahora sí hay panel?
+    if (esHistoria)
+    {
+        // En modo historia sí mostramos el panel de continuar/salir
         if (panelFinNivel != null)
         {
             MostrarPanelFinNivel();
@@ -120,6 +131,14 @@ private void TryWireUI()
             AvanzarAlSiguienteNivel();
         }
     }
+    else
+    {
+        // En modo libre → pasar directo al menú principal
+        Debug.Log("[NivelControllerGlobal] Modo libre completado → volver al MainMenu 🏁");
+        SceneManager.LoadScene("MainMenu");
+    }
+}
+
 
     private void MostrarPanelFinNivel()
     {

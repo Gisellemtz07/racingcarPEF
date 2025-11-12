@@ -1,18 +1,17 @@
-using UnityEngine;
 using System;
+using UnityEngine;
 
 public static class LevelCompleteInvoker
 {
-    // 🔹 Evento global que cualquier script puede escuchar
     public static event Action OnLevelCompleted;
 
-    // 🔹 Método que tus scripts (como GameMetrics) deben llamar
     public static void SignalComplete()
     {
-        Debug.Log("[LevelCompleteInvoker] 🏁 Nivel completado, enviando señal...");
+        Debug.Log("⚡ Nivel completado → SignalComplete()");
         OnLevelCompleted?.Invoke();
     }
 }
+
 
 
 

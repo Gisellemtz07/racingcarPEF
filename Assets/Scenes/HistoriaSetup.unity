@@ -2236,7 +2236,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69ae70f4a0111437baeb6d6d0c0e931b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameModeManager
-  CurrentMode: 0
+  CurrentMode: 1
   nivelesHistoria:
   - Nivel 1
   - Nivel 2

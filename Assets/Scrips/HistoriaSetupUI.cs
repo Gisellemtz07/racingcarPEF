@@ -73,36 +73,45 @@ public class HistoriaSetupUI : MonoBehaviour
     }
 
     private void OnEmpezarSesion()
+{
+    var manager = GameModeManager.Instance;
+    manager.nivelesHistoria.Clear();
+    manager.vueltasPorNivel.Clear();
+    manager.nivelActual = 0;
+    manager.SetMode(GameModeManager.GameMode.Story);
+
+    for (int i = 0; i < pasos.Length; i++)
     {
-        var manager = GameModeManager.Instance;
-        manager.nivelesHistoria.Clear();
-        manager.vueltasPorNivel.Clear();
-        manager.nivelActual = 0;
-        manager.SetMode(GameModeManager.GameMode.Story);
+        int selectedIdx = pasos[i].nivelDropdown.value;
+        string escena = nombresEscenasDisponibles[selectedIdx];
 
-        for (int i = 0; i < pasos.Length; i++)
-        {
-            int selectedIdx = pasos[i].nivelDropdown.value;
-            string escena = nombresEscenasDisponibles[selectedIdx];
+        int vueltas = 3;
+        if (!string.IsNullOrEmpty(pasos[i].vueltasInput.text))
+            int.TryParse(pasos[i].vueltasInput.text, out vueltas);
 
-            int vueltas = 3;
-            if (!string.IsNullOrEmpty(pasos[i].vueltasInput.text))
-                int.TryParse(pasos[i].vueltasInput.text, out vueltas);
-
-            manager.nivelesHistoria.Add(escena);
-            manager.vueltasPorNivel[escena] = vueltas;
-        }
-
-        // 🔹 Asegura persistencia del manager
-        DontDestroyOnLoad(manager.gameObject);
-
-        // 🔹 Crear el controlador global de niveles si no existe
-        EnsureNivelControllerListenerExists();
-
-        // 🔹 Cargar la escena de Login
-        Debug.Log("[HistoriaSetupUI] Redirigiendo al login antes de iniciar historia...");
-        SceneManager.LoadScene("Login");
+        manager.nivelesHistoria.Add(escena);
+        manager.vueltasPorNivel[escena] = vueltas;
     }
+
+    // 🔹 Asegura persistencia del manager
+    DontDestroyOnLoad(manager.gameObject);
+
+    // 🔹 Crear el controlador global de niveles si no existe
+    EnsureNivelControllerListenerExists();
+
+    // 🚀 Cargar el primer nivel automáticamente
+    if (manager.nivelesHistoria.Count > 0)
+    {
+        string primerNivel = manager.nivelesHistoria[0];
+        Debug.Log($"[HistoriaSetupUI] Iniciando historia con: {primerNivel}");
+        SceneManager.LoadScene(primerNivel);
+    }
+    else
+    {
+        Debug.LogWarning("[HistoriaSetupUI] No hay niveles configurados para iniciar.");
+    }
+}
+
 
     private void EnsureNivelControllerListenerExists()
 {

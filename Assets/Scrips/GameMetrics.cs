@@ -127,7 +127,7 @@ public int VecesFuera => vecesFuera;
             fueraDePista = true;
             tiempoInicioFuera = Time.time;
             vecesFuera++;
-            Debug.Log($"[GameMetrics] 🚨 Salió de pista (vez #{vecesFuera})");
+            Debug.Log($"[GameMetrics]  Salió de pista (vez #{vecesFuera})");
             UpdateUI();
         }
     }
@@ -139,7 +139,7 @@ public int VecesFuera => vecesFuera;
             fueraDePista = false;
             float duracion = Time.time - tiempoInicioFuera;
             tiempoTotalFuera += duracion;
-            Debug.Log($"[GameMetrics] ✅ Regresó a pista (fuera {duracion:0.00}s, total {tiempoTotalFuera:0.00}s)");
+            Debug.Log($"[GameMetrics]  Regresó a pista (fuera {duracion:0.00}s, total {tiempoTotalFuera:0.00}s)");
             UpdateUI();
         }
     }
@@ -160,20 +160,45 @@ public int VecesFuera => vecesFuera;
     }
 
     void UpdateUI()
+{
+    bool esHistoria = false;
+    if (GameModeManager.Instance != null)
+        esHistoria = GameModeManager.Instance.CurrentMode == GameModeManager.GameMode.Story;
+
+    // === Mostrar vueltas ===
+    if (vueltasTMP)
     {
-        if (vueltasTMP)
+        vueltasTMP.gameObject.SetActive(true);
+
+        if (esHistoria)
+        {
+            // Modo historia: con total
             vueltasTMP.text = $"Vueltas: {currentLaps}/{targetLaps}";
-        if (ultimaVueltaTMP)
-            ultimaVueltaTMP.text = $"Última: {FormatSec(lastLap)}";
-        if (mejorVueltaTMP)
-            mejorVueltaTMP.text = $"Mejor: {FormatSec(bestLap)}";
-        if (promedioVueltaTMP)
-            promedioVueltaTMP.text = $"Prom: {(avgLap > 0 ? FormatSec(avgLap) : "--")}";
-        if (fueraTMP)
-            fueraTMP.text = $"Fuera pista: {tiempoTotalFuera:0.0}s";
-        if (salidasTMP)
-            salidasTMP.text = $"Salidas: {vecesFuera}";
+        }
+        else
+        {
+            // Modo libre: solo las vueltas completadas
+            vueltasTMP.text = $"Vueltas: {currentLaps}";
+        }
     }
+
+    if (ultimaVueltaTMP)
+        ultimaVueltaTMP.text = $"Última: {FormatSec(lastLap)}";
+
+    if (mejorVueltaTMP)
+        mejorVueltaTMP.text = $"Mejor: {FormatSec(bestLap)}";
+
+    if (promedioVueltaTMP)
+        promedioVueltaTMP.text = $"Prom: {(avgLap > 0 ? FormatSec(avgLap) : "--")}";
+
+    if (fueraTMP)
+        fueraTMP.text = $"Fuera pista: {tiempoTotalFuera:0.0}s";
+
+    if (salidasTMP)
+        salidasTMP.text = $"Salidas: {vecesFuera}";
+}
+
+
 }
 
 

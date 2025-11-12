@@ -36,18 +36,18 @@ public static class UserDatabase
             {
                 var json = File.ReadAllText(SavePath);
                 data = JsonUtility.FromJson<UserDatabaseData>(json) ?? new UserDatabaseData();
-                Debug.Log($"📂 [UserDatabase] {data.users.Count} usuarios cargados desde JSON.");
+                Debug.Log($" [UserDatabase] {data.users.Count} usuarios cargados desde JSON.");
             }
             else
             {
                 data = new UserDatabaseData();
                 Save(); // crea archivo vacío
-                Debug.Log("📄 [UserDatabase] No existía users.json, se creó uno nuevo.");
+                Debug.Log("[UserDatabase] No existía users.json, se creó uno nuevo.");
             }
         }
         catch (Exception ex)
         {
-            Debug.LogError($"❌ Error al cargar base de datos: {ex.Message}");
+            Debug.LogError($" Error al cargar base de datos: {ex.Message}");
             data = new UserDatabaseData();
         }
     }
@@ -58,11 +58,11 @@ public static class UserDatabase
         {
             var json = JsonUtility.ToJson(data, true);
             File.WriteAllText(SavePath, json);
-            Debug.Log($"💾 [UserDatabase] Guardado exitoso ({data.users.Count} usuarios).");
+            Debug.Log($"[UserDatabase] Guardado exitoso ({data.users.Count} usuarios).");
         }
         catch (Exception ex)
         {
-            Debug.LogError($"❌ Error al guardar base de datos: {ex.Message}");
+            Debug.LogError($" Error al guardar base de datos: {ex.Message}");
         }
     }
 
@@ -91,27 +91,54 @@ public static class UserDatabase
 
     public static bool TryCreate(string username, string password, out string error)
     {
-        error = null;
-        username = username?.Trim();
+        error = "";
 
-        if (string.IsNullOrWhiteSpace(username)) { error = "Escribe un usuario."; return false; }
-        if (string.IsNullOrWhiteSpace(password)) { error = "Escribe una contraseña."; return false; }
-        if (username.Length < 3) { error = "El usuario debe tener al menos 3 caracteres."; return false; }
-        if (password.Length < 4) { error = "La contraseña debe tener al menos 4 caracteres."; return false; }
+        Load();
 
-        if (data.users.Count >= MaxUsers) { error = "Límite de 10 usuarios."; return false; }
-        if (Exists(username)) { error = "Ese usuario ya existe."; return false; }
+        if (data.users.Count >= MaxUsers)
+        {
+            error = $"Solo se permiten {MaxUsers} usuarios.";
+            return false;
+        }
 
-        var rec = new UserRecord
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            error = "Escribe un usuario.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            error = "Escribe una contraseña.";
+            return false;
+        }
+
+        if (username.Length < 3)
+        {
+            error = "El usuario debe tener al menos 3 caracteres.";
+            return false;
+        }
+
+        if (password.Length < 4)
+        {
+            error = "La contraseña debe tener al menos 4 caracteres.";
+            return false;
+        }
+
+        if (Exists(username))
+        {
+            error = $"El nombre '{username}' ya existe.";
+            return false;
+        }
+
+        data.users.Add(new UserRecord
         {
             username = username,
             passwordHash = Hash(password)
-        };
+        });
 
-        data.users.Add(rec);
         Save();
-
-        Debug.Log($"✅ [UserDatabase] Usuario '{username}' creado exitosamente.");
+        Debug.Log($"✅ [UserDatabase] Usuario creado: {username}");
         return true;
     }
 
@@ -126,7 +153,7 @@ public static class UserDatabase
         if (rec == null)
         {
             error = "Usuario no encontrado.";
-            Debug.LogWarning($"⚠️ [UserDatabase] '{username}' no existe.");
+            Debug.LogWarning($" [UserDatabase] '{username}' no existe.");
             return false;
         }
 
@@ -134,11 +161,11 @@ public static class UserDatabase
         if (!ok)
         {
             error = "Contraseña incorrecta.";
-            Debug.LogWarning($"⚠️ [UserDatabase] Contraseña incorrecta para '{username}'.");
+            Debug.LogWarning($" [UserDatabase] Contraseña incorrecta para '{username}'.");
             return false;
         }
 
-        Debug.Log($"🔓 [UserDatabase] Login exitoso para '{username}'.");
+        Debug.Log($" [UserDatabase] Login exitoso para '{username}'.");
         return true;
     }
 

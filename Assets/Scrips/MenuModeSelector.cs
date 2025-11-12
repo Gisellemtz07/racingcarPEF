@@ -1,63 +1,39 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class MenuModeSelector : MonoBehaviour
 {
-    [SerializeField] private GameModeManager gameModeManager;
-    [SerializeField] private SceneNavigator sceneNavigator;
-
-    private void Awake()
-    {
-        EnsureReferences();
-    }
-
     public void SelectStoryMode()
     {
-        EnsureReferences();
-
-        if (gameModeManager != null)
+        // Garantizar que exista el GameModeManager
+        if (GameModeManager.Instance == null)
         {
-            gameModeManager.SetMode(GameModeManager.GameMode.Story);
+            var go = new GameObject("_GameModeManager");
+            go.AddComponent<GameModeManager>();
         }
 
-        if (sceneNavigator != null)
-        {
-            sceneNavigator.GoToLoginForMode(GameModeManager.GameMode.Story);
-        }
+        // Cambiar modo a HISTORIA
+        GameModeManager.Instance.SetMode(GameModeManager.GameMode.Story);
+        Debug.Log("[MenuModeSelector] Entrando a modo HISTORIA → HistoriaSetup");
+
+        // Cargar directamente la escena de configuración de historia
+        SceneManager.LoadScene("HistoriaSetup");
     }
 
     public void SelectFreePlayMode()
     {
-        EnsureReferences();
-
-        if (gameModeManager != null)
+        // Garantizar que exista el GameModeManager
+        if (GameModeManager.Instance == null)
         {
-            gameModeManager.SetMode(GameModeManager.GameMode.FreePlay);
+            var go = new GameObject("_GameModeManager");
+            go.AddComponent<GameModeManager>();
         }
 
-        if (sceneNavigator != null)
-        {
-            sceneNavigator.GoToLoginForMode(GameModeManager.GameMode.FreePlay);
-        }
-    }
+        // Cambiar modo a LIBRE
+        GameModeManager.Instance.SetMode(GameModeManager.GameMode.FreePlay);
+        Debug.Log("[MenuModeSelector] Entrando a modo LIBRE → SeleccionCarroPista");
 
-    private void EnsureReferences()
-    {
-        // intenta usar el singleton primero
-        if (gameModeManager == null)
-        {
-            gameModeManager = GameModeManager.Instance;
-        }
-
-        // reemplazo del FindObjectOfType por API nueva
-        if (sceneNavigator == null)
-        {
-            // Unity moderno prefiere esto:
-#if UNITY_2023_1_OR_NEWER
-            sceneNavigator = Object.FindFirstObjectByType<SceneNavigator>();
-#else
-            // fallback por si algún día abres el proyecto en una versión más viejita de Unity
-            sceneNavigator = FindObjectOfType<SceneNavigator>();
-#endif
-        }
+        // Cargar escena del modo libre (selección de carro/pista)
+        SceneManager.LoadScene("SeleccionCarroPista");
     }
 }

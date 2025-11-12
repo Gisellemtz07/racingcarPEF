@@ -45,51 +45,51 @@ public class UserUIController : MonoBehaviour
 
     // ========== LOGIN ==========
     public void OnClick_IniciarSesion()
+{
+    if (UserDatabase.Users.Count == 0)
     {
-        if (UserDatabase.Users.Count == 0)
-        {
-            txtFeedback.text = "Primero crea un usuario.";
-            return;
-        }
-
-        var username = dropdownUsuarios.options[dropdownUsuarios.value].text;
-        if (username == "(sin usuarios)")
-        {
-            txtFeedback.text = "No hay usuarios. Crea uno.";
-            return;
-        }
-
-        var pass = inputPassword.text;
-        if (UserDatabase.TryValidate(username, pass, out string error))
-        {
-            txtFeedback.text = "¡Listo! ✅";
-
-            if (GameSession.Instance == null)
-            {
-                var go = new GameObject("_GameSession");
-                go.AddComponent<GameSession>();
-            }
-            GameSession.Instance.SetUsuarioActual(username);
-
-            // 🔹 Detectar modo historia
-            if (GameModeManager.Instance != null &&
-                GameModeManager.Instance.CurrentMode == GameModeManager.GameMode.Story)
-            {
-                string primerNivel = GameModeManager.Instance.GetNivelActual();
-                Debug.Log($"[Login] Iniciando historia con {primerNivel}");
-                SceneManager.LoadScene(primerNivel);
-            }
-            else
-            {
-                // flujo normal
-                SceneManager.LoadScene("SeleccionCarroPista");
-            }
-        }
-        else
-        {
-            txtFeedback.text = error;
-        }
+        txtFeedback.text = "Primero crea un usuario.";
+        return;
     }
+
+    var username = dropdownUsuarios.options[dropdownUsuarios.value].text;
+    if (username == "(sin usuarios)")
+    {
+        txtFeedback.text = "No hay usuarios. Crea uno.";
+        return;
+    }
+
+    var pass = inputPassword.text;
+    if (UserDatabase.TryValidate(username, pass, out string error))
+    {
+        txtFeedback.text = " Sesión iniciada correctamente.";
+
+        // Asegurar GameSession
+        if (GameSession.Instance == null)
+        {
+            var go = new GameObject("_GameSession");
+            go.AddComponent<GameSession>();
+        }
+        GameSession.Instance.SetUsuarioActual(username);
+
+        // Asegurar GameModeManager
+        if (GameModeManager.Instance == null)
+        {
+            var go = new GameObject("_GameModeManager");
+            go.AddComponent<GameModeManager>();
+        }
+
+        GameModeManager.Instance.loginCompletado = true;
+
+        Debug.Log($"[Login] Sesión iniciada con {username}. Cargando MainMenu...");
+        SceneManager.LoadScene("MainMenu");
+    }
+    else
+    {
+        txtFeedback.text = error;
+    }
+}
+
 
     public void OnClick_IrANuevoUsuario()
     {
@@ -121,7 +121,7 @@ public class UserUIController : MonoBehaviour
 
         if (UserDatabase.TryCreate(u, p1, out string error))
         {
-            txtFeedbackCrear.text = "Usuario creado ✅";
+            txtFeedbackCrear.text = "Usuario creado ";
             panelCrear.SetActive(false);
             panelLogin.SetActive(true);
             RefrescarListaUsuarios();
@@ -139,4 +139,3 @@ public class UserUIController : MonoBehaviour
         txtFeedbackCrear.text = "";
     }
 }
-

@@ -11,6 +11,8 @@ public class GameModeManager : MonoBehaviour
     public List<string> nivelesHistoria = new List<string>();
     public Dictionary<string, int> vueltasPorNivel = new Dictionary<string, int>();
     public int nivelActual = 0;
+    public bool loginCompletado = false;
+
 
     private void Awake()
     {
